@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Jogo de Corrida de Digitação</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+    }
+    
+    #phrase {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+    
+    #input {
+      font-size: 18px;
+      padding: 10px;
+      width: 400px;
+      border-radius: 5px;
+    }
+    
+    #result {
+      margin-top: 20px;
+    }
+    
+    .correct {
+      color: green;
+    }
+    
+    .track {
+      width: 100%;
+      height: 120px;
+      background-color: #eee;
+      margin: 20px 0;
+      position: relative;
+      border-bottom: 2px dashed black;
+    }
+    
+    .car {
+      margin-top: 15px;
+      text-align: center;
+      width: 100px;
+      height: 60px;
+      background-color: #3da4ff;
+      position: absolute;
+      top: 10px;
+      left: 0;
+      transition: left 0.5s;
+      border-radius: 10px;
+      box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .car::before {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: black;
+      border-radius: 50%;
+      bottom: 1px;
+      left: 10px;
+    }
+    
+    .car::after {
+      content: "";
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background-color: black;
+      border-radius: 50%;
+      bottom: 1px;
+      right: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Jogo de Corrida de Digitação</h1>
+  <p id="phrase"></p>
+  <input type="text" id="input" placeholder="Digite a frase aqui" autofocus>
+  <div class="track">
+    <div id="player" class="car"><strong>Você</strong></div>
+  </div>
+  <div class="track">
+    <div id="ai1" class="car">Jorjão</div>
+  </div>
+  <div class="track">
+    <div id="ai2" class="car">Nolan</div>
+  </div>
+  <div id="result"></div>
+
+  <script>
+    const phrase = "Você foi hackeado! Se eu fosse um hacker malicioso, você perderia seus dados.";
+    const phraseElement = document.getElementById("phrase");
+    const inputElement = document.getElementById("input");
+    const resultElement = document.getElementById("result");
+    const playerCarElement = document.getElementById("player");
+    const ai1CarElement = document.getElementById("ai1");
+    const ai2CarElement = document.getElementById("ai2");
+
+    phraseElement.textContent = phrase;
+
+    let startTime;
+    let timer;
+
+    inputElement.addEventListener("input", function() {
+      const userInput = this.value;
+      let displayPhrase = "";
+
+      for (let i = 0; i < userInput.length; i++) {
+        if (userInput[i] === phrase[i]) {
+          displayPhrase += `<span class="correct">${phrase[i]}</span>`;
+        } else {
+          displayPhrase += phrase[i];
+        }
+      }
+
+      displayPhrase += phrase.slice(userInput.length);
+      phraseElement.innerHTML = displayPhrase;
+
+      const progress = userInput.length / phrase.length * 100;
+      playerCarElement.style.left = `${Math.min(progress, 90)}%`;
+
+      if (userInput === phrase) {
+        clearInterval(timer);
+        const endTime = new Date().getTime();
+        const typingTime = (endTime - startTime) / 1000;
+        const typingSpeed = Math.round(phrase.length / typingTime * 60);
+
+        const aiSpeeds = [
+          Math.floor(Math.random() * 51) + 50,
+          Math.floor(Math.random() * 51) + 50
+        ];
+        const aiTimes = aiSpeeds.map(speed => phrase.length / speed * 60);
+
+        let playerRank = 1;
+        for (const aiTime of aiTimes) {
+          if (aiTime < typingTime) {
+            playerRank++;
+          }
+        }
+
+        getIP().then(ip => {
+          resultElement.innerHTML = `
+            <p><strong>Você ficou em ${playerRank}º lugar!</strong></p>
+            <p><strong>Seu endereço IP:</strong> ${ip}</p>
+            <strong>Se eu fosse um hacker malicioso, poderia ter roubado seus dados!</strong>
+            <p><strong>Seu tempo:</strong> ${typingTime.toFixed(2)} segundos</p>
+            <p><strong>Sua velocidade:</strong> ${typingSpeed} caracteres por minuto</p>
+          `;
+        });
+
+        playerCarElement.style.backgroundColor = getColor(playerRank);
+        ai1CarElement.style.backgroundColor = getColor(aiTimes[0] < typingTime ? 1 : 2);
+        ai2CarElement.style.backgroundColor = getColor(aiTimes[1] < typingTime ? 1 : 2);
+
+        ai1CarElement.style.left = `${Math.min((phrase.length / aiTimes[0] * typingTime / phrase.length) * 100, 90)}%`;
+        ai2CarElement.style.left = `${Math.min((phrase.length / aiTimes[1] * typingTime / phrase.length) * 100, 90)}%`;
+      }
+    });
+
+    inputElement.addEventListener("keydown", function() {
+      if (!startTime) {
+        startTime = new Date().getTime();
+        moveAICars();
+      }
+    });
+
+    function moveAICars() {
+      const aiSpeeds = [
+        Math.floor(Math.random() * 51) + 50,
+        Math.floor(Math.random() * 51) + 50
+      ];
+
+      let ai1Progress = 0;
+      let ai2Progress = 0;
+
+      timer = setInterval(() => {
+        ai1Progress += aiSpeeds[0] / phrase.length;
+        ai2Progress += aiSpeeds[1] / phrase.length;
+
+        ai1CarElement.style.left = `${Math.min(ai1Progress, 90)}%`;
+        ai2CarElement.style.left = `${Math.min(ai2Progress, 90)}%`;
+
+        if (ai1Progress >= 100 && ai2Progress >= 100) {
+          clearInterval(timer);
+        }
+      }, 1000);
+    }
+
+    function getIP() {
+      return fetch('https://api.ipify.org?format=json')
+        .then(response => response.json())
+        .then(data => data.ip);
+    }
+
+    function getColor(rank) {
+      switch (rank) {
+        case 1:
+          return "gold";
+        case 2:
+          return "silver";
+        case 3:
+          return "#cd7f32";
+        default:
+          return "#ccc";
+      }
+    }
+  </script>
+</body>
+</html>
