@@ -42,7 +42,7 @@
       text-align: center;
       width: 100px;
       height: 60px;
-      background-color: #3da4ff;
+      background-color: #40c6ff;
       position: absolute;
       top: 10px;
       left: 0;
@@ -58,7 +58,7 @@
       height: 20px;
       background-color: black;
       border-radius: 50%;
-      bottom: 1px;
+      bottom: -5px;
       left: 10px;
     }
     
@@ -69,7 +69,7 @@
       height: 20px;
       background-color: black;
       border-radius: 50%;
-      bottom: 1px;
+      bottom: -5px;
       right: 10px;
     }
   </style>
@@ -90,7 +90,7 @@
   <div id="result"></div>
 
   <script>
-    const phrase = "Você foi hackeado! Se eu fosse um hacker malicioso, você perderia seus dados.";
+    const phrase = "Não clique em qualquer link que você vê, isso pode ser perigoso.";
     const phraseElement = document.getElementById("phrase");
     const inputElement = document.getElementById("input");
     const resultElement = document.getElementById("result");
@@ -144,7 +144,7 @@
           resultElement.innerHTML = `
             <p><strong>Você ficou em ${playerRank}º lugar!</strong></p>
             <p><strong>Seu endereço IP:</strong> ${ip}</p>
-            <strong>Se eu fosse um hacker malicioso, poderia ter roubado seus dados! Para você ver um exemplo eu te mostrei o seu IP para te mostrar que ao clicar em um link desconhecido você pode não estar seguro.</strong>
+            <strong>Se eu fosse um hacker malicioso, poderia ter roubado seus dados! Para você ver um exemplo eu te mostrei o seu IP, para te mostrar que ao clicar em um link desconhecido você pode não estar seguro.</strong>
             <p><strong>Seu tempo:</strong> ${typingTime.toFixed(2)} segundos</p>
             <p><strong>Sua velocidade:</strong> ${typingSpeed} caracteres por minuto</p>
           `;
